@@ -1,5 +1,4 @@
 import asyncio, hashlib, re, secrets, time, datetime as dt
-import bcrypt
 from fastapi import APIRouter, Request, HTTPException, Response
 from pydantic import BaseModel
 from core import settings, db, ipist
@@ -39,9 +38,9 @@ async def login(b: Login, req: Request, res: Response):
     if lock and lock.get("until", 0) > now:
         await alog("login", req, ok=False, fp=k, note="locked")
         raise HTTPException(423, "Device locked for 24 hours")
-    ok = (secrets.compare_digest(b.u.encode(), settings.ADMIN_USER.encode())
-          and settings.ADMIN_PASS_BCRYPT
-          and await asyncio.to_thread(bcrypt.checkpw, b.p.encode(), settings.ADMIN_PASS_BCRYPT))
+    ok = bool(settings.ADMIN_PASS) \
+        and secrets.compare_digest(b.u.encode(), settings.ADMIN_USER.encode()) \
+        and secrets.compare_digest(b.p.encode(), settings.ADMIN_PASS.encode())
     await alog("login", req, ok=bool(ok), fp=k, ua=req.headers.get("user-agent", "")[:160])
     if not ok:
         fails[k] = fails.get(k, 0) + 1
