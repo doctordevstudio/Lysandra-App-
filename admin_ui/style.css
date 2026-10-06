@@ -13,7 +13,7 @@ textarea{min-height:90px}label{display:block;font-size:12px;color:var(--mut);mar
 .btn:hover{filter:brightness(1.08);transform:translateY(-1px)}.btn.ghost{background:#ffffff18;color:inherit;border:1px solid var(--bd)}
 .btn.blue{background:linear-gradient(90deg,var(--b1),var(--b2))}.btn.red{background:#e5484d}.btn.sm{padding:5px 10px;font-size:12px}
 #side .btn.ghost{color:#fff}
-#app{display:flex;min-height:100vh}#side{width:230px;background:var(--side);color:#fff;padding:16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+#app{display:flex;min-height:100vh}#app[hidden],#login[hidden]{display:none}#side{width:230px;background:var(--side);color:#fff;padding:16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
 .brand{display:flex;gap:10px;align-items:center;font-size:20px;margin-bottom:14px}.brand img{width:40px;border-radius:12px}
 #nav a{display:block;padding:10px 12px;border-radius:12px;color:#cfe0ff;text-decoration:none;cursor:pointer;transition:.2s}
 #nav a:hover,#nav a.on{background:linear-gradient(90deg,#ff7a1833,#27c4ff22);color:#fff}
