@@ -176,6 +176,11 @@ def reply(sk, obj):
 
 @app.exception_handler(HTTPException)
 async def http_exc(req, exc):
+    # /admin/* exceptions carry a human-readable detail (e.g. "Too many attempts", "Invalid
+    # credentials (2 left)") that the admin UI needs to actually show the admin something useful.
+    # /v1/* (the app-facing API) stays deliberately uninformative -- no detail, no hints.
+    if req.url.path.startswith("/admin/"):
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
     return JSONResponse({"e": 1}, status_code=exc.status_code)
 
 
