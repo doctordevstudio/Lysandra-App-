@@ -179,6 +179,16 @@ async def http_exc(req, exc):
     return JSONResponse({"e": 1}, status_code=exc.status_code)
 
 
+@app.exception_handler(Exception)
+async def unhandled_exc(req, exc):
+    # Any uncaught error (Firebase unreachable, bad rules, etc.) still returns JSON instead of
+    # Render/Starlette's plain-text 500 page, which the admin UI can't parse. Logged server-side
+    # so `render logs` / the dashboard Logs tab shows the real traceback; the client only ever
+    # sees a uninformative {"e":1}, matching the rest of this API's error style.
+    log.exception("unhandled error on %s %s", req.method, req.url.path)
+    return JSONResponse({"e": 1}, status_code=500)
+
+
 @app.post("/v1/home")
 async def home(req: Request):
     d, sk, _ = await secure(req)
