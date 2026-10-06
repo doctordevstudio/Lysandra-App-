@@ -23,7 +23,9 @@ $("#lf").onsubmit = async e => {
   e.preventDefault();
   try {
     const r = await fetch("/admin/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: $("#u").value, p: $("#p").value, fp: await fp() }) });
-    const j = await r.json(); if (!r.ok) throw new Error(j.detail);
+    let j;
+    try { j = await r.json(); } catch { throw new Error(`Server error (${r.status}). Check the Render Logs tab, or that FIREBASE_DB_URL / Firebase rules are set up correctly — see DEPLOY.md.`); }
+    if (!r.ok) throw new Error(j.detail || `Error ${r.status}`);
     csrf = j.csrf; $("#p").value = ""; start();
   } catch (x) { $("#lerr").textContent = x.message; }
 };
