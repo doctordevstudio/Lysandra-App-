@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lysandra Admin</title><link rel="icon" href="icon.png"><link rel="stylesheet" href="style.css"></head>
+<body data-theme="light">
+<div id="login" class="center"><form id="lf" class="card login">
+  <img src="icon.png" class="logo" alt=""><h1>Lysandra</h1><p class="muted">Admin console</p>
+  <input id="u" placeholder="Username" autocomplete="username" required>
+  <input id="p" type="password" placeholder="Password" autocomplete="current-password" required>
+  <button class="btn">Sign in</button><div id="lerr" class="err"></div></form></div>
+<div id="app" hidden>
+  <aside id="side"><div class="brand"><img src="icon.png" alt=""><b>Lysandra</b></div>
+    <nav id="nav"></nav><div class="grow"></div>
+    <div class="muted small" id="timer"></div>
+    <button class="btn ghost" id="theme">Night mode</button><button class="btn ghost" id="out">Logout</button></aside>
+  <main><header><button id="burger" class="btn ghost">☰</button><h2 id="title"></h2></header><section id="view"></section>
+  <footer>©️Copyright by Dr. Dev || Dr. Hamza 2026 All Rights Reserved.</footer></main>
+</div>
+<div id="modal" hidden><div class="card mbox"><div class="row between"><h3 id="mt"></h3><button class="btn ghost" id="mx">✕</button></div><div id="mb"></div></div></div>
+<script src="app.js"></script></body></html>
