@@ -21,13 +21,17 @@ const toast = m => alert(m);
 function showLogin(msg) { clearInterval(tick); $("#app").hidden = true; $("#login").hidden = false; $("#lerr").textContent = msg || ""; }
 $("#lf").onsubmit = async e => {
   e.preventDefault();
-  try {
+  const btn = $("#lf button");
+  if (btn.disabled) return;   // guard against a double-click/double-submit racing two /login calls --
+  btn.disabled = true;        // the backend only holds ONE active session, so a second login mid-flight
+  try {                       // invalidates the first and bounces it straight back to this screen.
     const r = await fetch("/admin/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: $("#u").value, p: $("#p").value, fp: await fp() }) });
     let j;
     try { j = await r.json(); } catch { throw new Error(`Server error (${r.status}). Check the Render Logs tab, or that FIREBASE_DB_URL / Firebase rules are set up correctly — see DEPLOY.md.`); }
     if (!r.ok) throw new Error(j.detail || `Error ${r.status}`);
     csrf = j.csrf; $("#p").value = ""; start();
   } catch (x) { $("#lerr").textContent = x.message; }
+  finally { btn.disabled = false; }
 };
 $("#out").onclick = async () => { try { await api("/logout", "POST"); } catch { } showLogin(); };
 $("#theme").onclick = () => { const d = document.body.dataset.theme === "dark"; document.body.dataset.theme = d ? "light" : "dark"; $("#theme").textContent = d ? "Night mode" : "Day mode"; };
