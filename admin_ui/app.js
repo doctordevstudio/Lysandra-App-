@@ -1,7 +1,7 @@
 "use strict";
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let csrf = "", left = 900, tick, range = { frm: "", to: "" };
+let csrf = "", range = { frm: "", to: "" };
 const IST = ts => ts ? new Date(ts * 1000).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", hour12: true }) : "-";
 
 async function fp() {
@@ -15,10 +15,10 @@ async function api(path, method = "GET", body) {
   if (r.status === 401) { showLogin("Session expired"); throw new Error("auth"); }
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.detail || "Error " + r.status);
-  left = 900; return j;
+  return j;
 }
 const toast = m => alert(m);
-function showLogin(msg) { clearInterval(tick); $("#app").hidden = true; $("#login").hidden = false; $("#lerr").textContent = msg || ""; }
+function showLogin(msg) { $("#app").hidden = true; $("#login").hidden = false; $("#lerr").textContent = msg || ""; }
 $("#lf").onsubmit = async e => {
   e.preventDefault();
   const btn = $("#lf button");
@@ -44,8 +44,6 @@ function start() {
   $("#login").hidden = true; $("#app").hidden = false;
   $("#nav").innerHTML = Object.entries(PAGES).map(([k, v]) => `<a data-p="${k}">${v}</a>`).join("");
   $("#nav").onclick = e => { if (e.target.dataset.p) { go(e.target.dataset.p); $("#side").classList.remove("open"); } };
-  clearInterval(tick); left = 900;
-  tick = setInterval(() => { left--; $("#timer").textContent = `Session ends in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`; if (left <= 0) showLogin("Session expired"); }, 1000);
   go("dashboard");
 }
 function go(p) {
