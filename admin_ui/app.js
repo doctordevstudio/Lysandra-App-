@@ -10,11 +10,22 @@ async function fp() {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
   return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
+// Turns a FastAPI error body into a readable string no matter its shape: a plain string detail
+// (our own HTTPExceptions), an array of Pydantic validation-error objects (FastAPI's automatic
+// 422 response), some other object, or nothing at all. Without this, `new Error(j.detail)` on a
+// non-string detail silently stringifies to the literal text "[object Object]".
+function errText(j, status) {
+  const d = j && j.detail;
+  if (d == null) return "Error " + status;
+  if (typeof d === "string") return d;
+  if (Array.isArray(d)) return d.map(e => (e && e.msg) || JSON.stringify(e)).join("; ");
+  return JSON.stringify(d);
+}
 async function api(path, method = "GET", body) {
   const r = await fetch("/admin/api" + path, { method, credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRF": csrf }, body: body ? JSON.stringify(body) : undefined });
   if (r.status === 401) { showLogin("Session expired"); throw new Error("auth"); }
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.detail || "Error " + r.status);
+  if (!r.ok) throw new Error(errText(j, r.status));
   return j;
 }
 const toast = m => alert(m);
@@ -28,7 +39,7 @@ $("#lf").onsubmit = async e => {
     const r = await fetch("/admin/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ u: $("#u").value, p: $("#p").value, fp: await fp() }) });
     let j;
     try { j = await r.json(); } catch { throw new Error(`Server error (${r.status}). Check the Render Logs tab, or that FIREBASE_DB_URL / Firebase rules are set up correctly — see DEPLOY.md.`); }
-    if (!r.ok) throw new Error(j.detail || `Error ${r.status}`);
+    if (!r.ok) throw new Error(errText(j, r.status));
     csrf = j.csrf; $("#p").value = ""; start();
   } catch (x) { $("#lerr").textContent = x.message; }
   finally { btn.disabled = false; }
