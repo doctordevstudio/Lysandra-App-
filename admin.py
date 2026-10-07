@@ -15,9 +15,11 @@ def ip_of(req):
     return req.headers.get("cf-connecting-ip") or (req.client.host if req.client else "?")
 
 
-async def alog(kind, req, **kw):
+async def alog(action, req, **kw):
+    # NB: first param is deliberately not named `kind` -- every item route below calls this as
+    # alog("create", req, kind=kind, ...), and kind= would collide with a positional `kind` param.
     ts = ipist.ts()
-    await db.put(f"admin_logs/{ts}_{secrets.token_hex(3)}", {"ts": ts, "type": kind, "ip": ip_of(req), **kw})
+    await db.put(f"admin_logs/{ts}_{secrets.token_hex(3)}", {"ts": ts, "type": action, "ip": ip_of(req), **kw})
 
 
 def fpkey(req, fp):
