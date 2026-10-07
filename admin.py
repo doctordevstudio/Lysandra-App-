@@ -60,9 +60,9 @@ async def auth(req: Request):
     sid = req.cookies.get("sid")
     if not S["sid"] or not sid or not secrets.compare_digest(sid, S["sid"]):
         raise HTTPException(401, "auth")
-    if time.time() - S["last"] > settings.SESSION_IDLE_SECONDS:
-        S["sid"] = None
-        raise HTTPException(401, "expired")
+    # No idle timeout: a session now lasts until explicit logout, a new login elsewhere (the
+    # single-session-slot design kicks out anyone else), or the server process restarting (S is
+    # in-memory). If you want a timeout back later, reintroduce a check against S["last"] here.
     if req.method != "GET" and not secrets.compare_digest(req.headers.get("x-csrf", ""), S["csrf"] or ""):
         raise HTTPException(403, "csrf")
     S["last"] = time.time()
@@ -191,7 +191,10 @@ def clean(kind, b: dict):
     for f in FIELDS[kind]:
         v = b.get(f, "")
         if f == "sort":
-            v = int(v or 0)
+            try:
+                v = int(v or 0)
+            except (TypeError, ValueError):
+                raise HTTPException(400, "sort must be a number")
         else:
             v = str(v or "").strip()[:4000]
             if f in ("image", "url") and v and not re.match(r"^(https?://|tg://)", v):
