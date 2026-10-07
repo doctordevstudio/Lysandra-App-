@@ -335,9 +335,19 @@ async def settings_get():
 
 
 @router.put("/settings/{section}", dependencies=[guard()])
-async def settings_put(section: str, b: dict | list, req: Request):
+async def settings_put(section: str, req: Request):
+    # Parsed manually rather than via a `b: dict | list` type-hinted param: FastAPI's automatic
+    # body validation has rough edges around Union-typed bodies (it was reporting a phantom
+    # "Field required" here with no actual missing field) -- this section's shape is admin-defined
+    # config anyway, not a fixed schema, so hand-rolled parsing is the more honest fit too.
     if section not in DEFAULTS:
         raise HTTPException(404)
+    try:
+        b = await req.json()
+    except Exception:
+        raise HTTPException(400, "invalid JSON body")
+    if not isinstance(b, (dict, list)):
+        raise HTTPException(400, "body must be a JSON object or array")
     await db.put(f"config/{section}", b)
     await alog("settings", req, section=section)
     await reload()
